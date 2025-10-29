@@ -1,10 +1,6 @@
-
-"""
-Loading the matlab files into python for part 1
-"""
-
 import numpy as np
 import scipy.io as sio
+
 
 data_folder = 'Assignment_data'
 
