@@ -1,6 +1,8 @@
 import numpy as np
 
 from load_data import load_data
+from print_results import print_eigenvalues
+from print_results import print_P_matrix
 
 
 if __name__ == "__main__":
@@ -10,8 +12,8 @@ if __name__ == "__main__":
     
     match output:
         case 1:
-            # - - - /// Assignment 1.1.1 /// - - - - - - - - - - - - - - - - -
-            print('- - - /// Assignment 1.1.1 /// - - -')
+            # - - - /// Assignment 1.1 /// - - - - - - - - - - - - - - - - - - 
+            print('- - - /// Assignment 1.1 /// - - -')
             
             # load data
             data = load_data('q1a')
@@ -20,37 +22,88 @@ if __name__ == "__main__":
             # computation of right eigenvalues and right eigenvector matrix
             lambda_A, Phi = np.linalg.eig(A)
             
-            # computation of damping and frequency of oscillatory modes
+            # computation of damping and frequency
             sigma = np.real(lambda_A)
             omega_d = np.imag(lambda_A) # damped angular frequency
             f_d = np.abs(omega_d) / (2 * np.pi) # damped frequency
+            zeta = -sigma / np.sqrt(sigma**2 + omega_d**2) # damping ratio
             
-            zeta = -sigma / np.abs(lambda_A) # damping ratio
+            # print eigenvalues in table format
+            print_eigenvalues(lambda_A, f_d, zeta)
             
-            omega_n = omega_d / np.sqrt(1 - zeta**2) # undamped natural angular frequency
-            f_n = np.abs(omega_n) / (2 * np.pi) # undamped natural frequency
+            # computation of left eigenvector matrix
+            Psi = np.linalg.inv(Phi)
             
-            # print right eigenvalues
-            print('eigenvalues: ')
-            for idx, l in enumerate(lambda_A):
-                print(f'λ{idx+1} = {l:.4f}')
-                
-            # print damped frequency of oscillatory modes
-            print('damped frequency of oscillatory modes: ')
-            for idx, f in enumerate(f_d):
-                if omega_d[idx] != 0:
-                    print(f'f_d{idx+1} = {f:.4f}')
-                    
-            # print damping ratios of oscillatory modes
-            print('damping ratio of oscillatory modes: ')
-            for idx, z in enumerate(zeta):
-                if omega_d[idx] != 0:
-                    print(f'ζ{idx+1} = {z:.4f}')
+            # computation of participation matrix
+            P = Phi * np.transpose(Psi)
             
-            # print undamped natural frequency of oscillatory modes
-            print('damped frequency of oscillatory modes: ')
-            for idx, f in enumerate(f_n):
-                if omega_d[idx] != 0:
-                    print(f'f_n{idx+1} = {f:.4f}')
+            # print participation matrix in table format
+            row_headers = ['Δδ', 'Δω', 'Δe_q\'', 'Δe_d\'', 'Δe_q\"', 'Δe_d\"']
+            print_P_matrix(P, row_headers)
+           
+            
+        case 2:
+            # - - - /// Assignment 1.2 /// - - - - - - - - - - - - - - - - - -
+            print('- - - /// Assignment 1.2 /// - - -')
+            
+            # load data
+            data = load_data('q1b')
+            A = data['A_q1b']
+    
+            # computation of right eigenvalues and right eigenvector matrix
+            lambda_A, Phi = np.linalg.eig(A)
+            
+            # computation of damping and frequency
+            sigma = np.real(lambda_A)
+            omega_d = np.imag(lambda_A) # damped angular frequency
+            f_d = np.abs(omega_d) / (2 * np.pi) # damped frequency
+            zeta = -sigma / np.sqrt(sigma**2 + omega_d**2) # damping ratio
+            
+            # print eigenvalues in table format
+            print_eigenvalues(lambda_A, f_d, zeta)
+            
+            # computation of left eigenvector matrix
+            Psi = np.linalg.inv(Phi)
+            
+            # computation of participation matrix
+            P = Phi * np.transpose(Psi)
+            
+            # print participation matrix in table format
+            row_headers = ['Δδ', 'Δω', 'Δe_q\'', 'Δe_d\'', 'Δe_q\"', 'Δe_d\"', 'Δv_m_exc', 'Δv_r3_exc', 'Δv_f_exc']
+            print_P_matrix(P, row_headers)
+            
+        
+        case 3:
+            # - - - /// Assignment 1.3 /// - - - - - - - - - - - - - - - - - -
+            print('- - - /// Assignment 1.3 /// - - -')
+            
+            # load data
+            data = load_data('q1c')
+            A = data['A_q1c']
+    
+            # computation of right eigenvalues and right eigenvector matrix
+            lambda_A, Phi = np.linalg.eig(A)
+            
+            # computation of damping and frequency
+            sigma = np.real(lambda_A)
+            omega_d = np.imag(lambda_A) # damped angular frequency
+            f_d = np.abs(omega_d) / (2 * np.pi) # damped frequency
+            zeta = -sigma / np.sqrt(sigma**2 + omega_d**2) # damping ratio
+            
+            # print eigenvalues in table format
+            print_eigenvalues(lambda_A, f_d, zeta)
+            
+            # computation of left eigenvector matrix
+            Psi = np.linalg.inv(Phi)
+            
+            # computation of participation matrix
+            P = Phi * np.transpose(Psi)
+            
+            # print participation matrix in table format
+            row_headers = ['Δδ', 'Δω', 'Δe_q\'', 'Δe_d\'', 'Δe_q\"', 'Δe_d\"',
+                           'Δv_m_exc', 'Δv_r3_exc', 'Δv_f_exc', 
+                           'Δv_1_pss', 'Δv_2_pss', 'Δv_3_pss', 'Δv_ss_pss',]
+            print_P_matrix(P, row_headers)
+            
             
 
