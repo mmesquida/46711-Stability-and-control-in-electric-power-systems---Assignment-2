@@ -8,7 +8,7 @@ def print_eigenvalues(lambda_A, f_d, zeta):
     data = []
     for i in range(len(lambda_A)):
         row = [i+1, 
-               f'{np.real(lambda_A[i]):.4f} {'+' if np.imag(lambda_A[i]) >= 0 else '-'} j{np.imag(lambda_A[i]):.4f}',
+               f"{np.real(lambda_A[i]):.4f} {'+' if np.imag(lambda_A[i]) >= 0 else '-'} j{np.imag(lambda_A[i]):.4f}",
                f_d[i],
                zeta[i]]
         data.append(row)
