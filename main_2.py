@@ -11,6 +11,8 @@ from scipy.io import loadmat
 from scipy.linalg import eig as la_eig
 import re
 from Assignment_helpfunctions_part_I.plot_phasor_diagram_sss import plot_phasors
+import Assignment_helpfunctions_part_I.P_matrix_write as Pwm
+
 
 if __name__ == "__main__":
 
@@ -45,4 +47,8 @@ if __name__ == "__main__":
                               'Δψ/kd,G4', 'Δψ/kq1,G4', 'Δψ/kq2,G4','Δv/m,exc,G4']
             print_P_matrix(P_q2, row_headers_q2)
             
-      
+            latex_names = row_headers_q2
+            Pwm.latex_P_matrix(P_q2, latex_names, False, 'PM_latex_code.tex', 5, 0.05)
+            # - - - /// Assignment 2.1.2 /// - - - - - - - - - - - - - - - - - - - - - 
+            print('- - - /// Assignment 2.1.2 /// - - - - - - - - - -')
+            
