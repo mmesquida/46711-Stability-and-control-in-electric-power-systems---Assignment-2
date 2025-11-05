@@ -15,7 +15,7 @@ from Assignment_helpfunctions_part_I.plot_phasor_diagram_sss import plot_phasors
 
 if __name__ == "__main__":
 
-    output = 2
+    output = 1
     
     match output:
 
