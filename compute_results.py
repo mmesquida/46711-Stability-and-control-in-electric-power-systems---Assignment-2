@@ -25,6 +25,11 @@ def get_P_matrix(A):
     # computation of participation matrix
     P = Phi * np.transpose(Psi)
     
+    # normalize participation matrix
+    P_abs = np.abs(P)
+    max_abs_per_col = P_abs.max(axis=0)
+    P = P / max_abs_per_col
+    
     return P, Phi, Psi
 
 #- - - - - - - - - - - functions for PART 2.1 - - - - - - - - - - - 

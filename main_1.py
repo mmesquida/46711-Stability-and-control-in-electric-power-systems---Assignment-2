@@ -16,7 +16,7 @@ from Assignment_helpfunctions_part_I.P_matrix_write import latex_P_matrix
 
 if __name__ == "__main__":
 
-    output = 2
+    output = 1
     
     match output:
 
