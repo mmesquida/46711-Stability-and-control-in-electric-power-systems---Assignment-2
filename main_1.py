@@ -3,15 +3,16 @@ import matplotlib.pyplot as plt
 
 from load_data import load_data
 from compute_results import get_eigenvalues
-from compute_results import get_P_matrix
+from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, top_generators, describe_modes,normalize_P_matrix, biorthonormalize, all_gen_ids
 from print_results import print_eigenvalues
-from print_results import print_P_matrix
+from print_results import print_P_matrix, build_modes_table_latex, write_tex_file  
 import numpy as np
 import cmath
 from scipy.io import loadmat
 from scipy.linalg import eig as la_eig
 import re
 from Assignment_helpfunctions_part_I.plot_phasor_diagram_sss import plot_phasors
+from Assignment_helpfunctions_part_I.P_matrix_write import latex_P_matrix
 
 if __name__ == "__main__":
 
@@ -156,146 +157,30 @@ if __name__ == "__main__":
              # print participation matrix
             row_headers_q2 = ['ΔδG1', 'ΔωG1', 'Δψ/f,G1', 'Δψ/kd,G1', 'Δψ/kq1,G1', 'Δψ/kq2,G1','Δv/m,exc,G1','ΔδG2', 'ΔωG2', 'Δψ/f,G2', 'Δψ/kd,G2', 'Δψ/kq1,G2', 'Δψ/kq2,G2','Δv/m,exc,G2','ΔδG3', 'ΔωG3', 'Δψ/f,G3', 'Δψ/kd,G3', 'Δψ/kq1,G3', 'Δψ/kq2,G3','Δv/m,exc,G3','ΔδG4', 'ΔωG4', 'Δψ/f,G4', 'Δψ/kd,G4', 'Δψ/kq1,G4', 'Δψ/kq2,G4','Δv/m,exc,G4']
             print_P_matrix(P_q2, row_headers_q2)
+            latex_P_matrix(P_q2, np.array(row_headers_q2).reshape(-1,1), False, 'P_matrix_q2.tex', 4, 0.1)
 
             # - - - /// Assignment 2.1.2 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 2.1.2 /// - - - - - - - - - -')
 
-            state_names = None
-            for key in ['latex_names_q2a','StateName','names_q2a']:
-                if key in data_q2:
-                    arr = np.squeeze(data_q2[key])
-                    try:
-                        lst = arr.tolist()
-                        state_names = [str(lst)] if isinstance(lst, (str,bytes)) else [str(x) for x in lst]
-                    except Exception:
-                        pass
-                    break
-
-            # biorthogonalize left and right eigenvectors
+            tol_imag = 1e-8
+            top_k = 5
+            n_states = A_q2.shape[0]
+            state_names = get_state_names(data_q2, n_states)
             lam, VL, VR = la_eig(A_q2, left=True, right=True)
-            for k in range(VR.shape[1]):
-                den = VL[:,k].conj().T @ VR[:,k]
-                if den != 0:
-                    VL[:,k] /= den
+            VL, VR = biorthonormalize(VL, VR)
+            P = normalize_P_matrix(VL, VR)
+            groups = pair_modes(lam, tol_imag)
+            names = get_state_names(data_q2, A_q2.shape[0])
+            descriptions = describe_modes(lam, groups, P, names, top_k=top_k)
+            tex = build_modes_table_latex(lam, groups, descriptions,
+                                        caption="Eigenvalues, oscillatory frequencies and damping, and dominant states (Q2.1.2).",
+                                        label="\\label{tab:q2_modes}") 
 
-            # participation matrix normalized by column
-            P = np.abs(VR * VL.conj())
-            colsum = P.sum(axis=0, keepdims=True); colsum[colsum==0] = 1.0
-            P = P / colsum
-
-            # group modes (real and complex conjugate pairs)
-            eps_imag = 1e-8
-            n = len(lam)
-            used = np.zeros(n, dtype=bool)
-            groups = []
-            for i in range(n):
-                if used[i]: 
-                    continue
-                if abs(np.imag(lam[i])) <= eps_imag:
-                    groups.append([i]); used[i] = True
-                else:
-                    cj = np.conj(lam[i]); j = None
-                    for t in range(i+1, n):
-                        if (not used[t]) and abs(lam[t] - cj) <= 1e-7:
-                            j = t; break
-                    if j is None:
-                        diffs = [abs(lam[t]-cj) if not used[t] else 1e9 for t in range(n)]
-                        j = int(np.argmin(diffs))
-                    groups.append([i, j]); used[i] = True; used[j] = True
-
-                # helper functions to classify states
-            def _cat_of_name(nm_str):
-                s = str(nm_str).replace(' ','').replace(',','')
-                if ('psi_{f' in s) or ('ψ/f' in s):   return r'$\Delta \psi_{f}$'
-                if ('psi_{kd' in s) or ('ψ/kd' in s): return r'$\Delta \psi_{kd}$'
-                if ('psi_{kq1' in s) or ('ψ/kq1' in s): return r'$\Delta \psi_{kq1}$'
-                if ('psi_{kq2' in s) or ('ψ/kq2' in s): return r'$\Delta \psi_{kq2}$'
-                if (r'\Delta\delta' in s) or ('Δδ' in s) or ('delta' in s): return r'$\Delta \delta$'
-                if (r'\Delta\omega' in s) or ('Δω' in s) or ('omega' in s): return r'$\Delta \omega$'
-                if ('v_{m' in s) or ('v/m' in s):     return r'$\Delta v_{m,\mathrm{exc}}$'
-                return r'$x$'
-
-            def _gen_of_name(nm_str):
-                s = str(nm_str).replace(' ','').replace(',','')
-                m = re.search(r'G(\d+)', s)
-                return m.group(1) if m else None
-
-            # Construct descriptions of dominant states per mode
-            descriptions = []
-            for grp in groups:
-                Pg = P[:, grp].mean(axis=1) if len(grp)==2 else P[:, grp[0]]
-                order = np.argsort(-Pg)                 # descendente
-                cum = np.cumsum(Pg[order])
-                upto = max(np.searchsorted(cum, 0.80)+1, min(6, len(order)))
-                take = order[:upto]
-
-                gens_by_cat = {}
-                for i in take:
-                    nm = state_names[i] if state_names else f"x{i+1}"
-                    cat = _cat_of_name(nm)
-                    g   = _gen_of_name(nm)
-                    gens_by_cat.setdefault(cat, set())
-                    if g: gens_by_cat[cat].add(g)
-
-                #Choose top 2 categories by total participation
-                cat_scores = {}
-                for cat in list(gens_by_cat.keys()):
-                    tot = 0.0
-                    for idx in range(len(Pg)):
-                        nm2 = state_names[idx] if state_names else f"x{idx+1}"
-                        if _cat_of_name(nm2) == cat:
-                            tot += Pg[idx]
-                    cat_scores[cat] = tot
-                chosen = sorted(gens_by_cat.keys(), key=lambda c: -cat_scores[c])[:2]
-
-                parts = []
-                for cat in chosen:
-                    gens = sorted(list(gens_by_cat[cat]), key=lambda x: int(x)) if gens_by_cat[cat] else []
-                    parts.append(cat + ((" de G" + ", G".join(gens)) if gens else ""))
-                desc = " y ".join(parts) if parts else "Dominant states not identified"
-                descriptions.append(desc)
-
-            # Export LaTeX table
-            lines = []
-            lines.append("\\begin{table}[H]")
-            lines.append("\\centering")
-            lines.append("\\scriptsize")
-            lines.append("\\setlength{\\tabcolsep}{6pt}")
-            lines.append("\\begin{tabular}{c|rr|r|r|l}")
-            lines.append("\\hline")
-            lines.append("\\textbf{No.} & \\multicolumn{2}{c|}{\\textbf{Eigenvalues}} & \\textbf{Frequency (Hz)} & \\textbf{Damping Ratio} & \\textbf{Dominant States}\\\\")
-            lines.append(" & Real & Imaginary &  &  & \\\\ \\hline")
-
-            no_counter = 1
-            for gi, grp in enumerate(groups):
-                if len(grp)==2 and abs(np.imag(lam[grp[0]]))>eps_imag:
-                    k = grp[0]
-                    sig = float(np.real(lam[k]))
-                    omg = float(abs(np.imag(lam[k])))
-                    fd  = omg/(2*np.pi)
-                    zt  = -sig/np.sqrt(sig**2 + omg**2)
-                    sig_s = f"{sig:.3f}"
-                    omg_s = f"{omg:.3f}"
-                    no_str = f"{no_counter},{no_counter+1}"
-                    lines.append(f"{no_str} & {sig_s} & $\\pm{omg_s}$ & {fd:.3f} & {zt:.3f} & {descriptions[gi]}\\\\")
-                    no_counter += 2
-                else:
-                    k = grp[0]
-                    sig = float(np.real(lam[k])); sig_s = f"{sig:.3f}"
-                    lines.append(f"{no_counter} & {sig_s} & -- & -- & -- & {descriptions[gi]}\\\\")
-                    no_counter += 1
-
-            lines.append("\\hline")
-            lines.append("\\end{tabular}")
-            lines.append("\\caption{Eigenvalues, oscillatory frequencies and damping, and dominant states (Q2.1.2).}")
-            lines.append("\\label{tab:q2_modes}")
-            lines.append("\\end{table}")
-
-            with open("modes_q2_table.tex", "w", encoding="utf-8") as f:
-                f.write("\n".join(lines))
-            
+            write_tex_file("modes_q2_table.tex", tex)
+                
              # - - - /// Assignment 2.1.4 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 2.1.4 /// - - - - - - - - - -')
+            
             print("Total state names:", len(state_names))
             for i, nm in enumerate(state_names[:40]):  
                 print(f"{i:02d}: {nm}")
@@ -321,8 +206,7 @@ if __name__ == "__main__":
                 if re.search(r'omega.*g\d+', s):
                     omega_idx.append(i)
 
-            print("Found delta_idx:", delta_idx)
-            print("Found omega_idx:", omega_idx)
+
 
             if len(delta_idx) == 0 or len(omega_idx) == 0:
                 print("No matches via name parsing -> using fallback pattern (blocks of 7 states per generator).")

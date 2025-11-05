@@ -4,8 +4,6 @@ Write participation matrix to LaTeX table or Excel
 
 @author: chhil
 """
-
-import xlwt
 import numpy as np
 
 def latex_P_matrix(P,state_labels,Matlab_array,filename,maximum_col,bold_limit):
@@ -21,7 +19,7 @@ def latex_P_matrix(P,state_labels,Matlab_array,filename,maximum_col,bold_limit):
     N = int(np.ceil(n2/n_elm)) # Number of iteration
     n_hlines = 7 # Horizontal line pr. 6 values
     counter = 1 
-    fid = open(filename,'w') # Open file with write access
+    fid = open(filename,'w', encoding='utf-8', newline='\n') # Open file with write access
     
     # Create a table pr. 4 eigenvalues
     for h in range(0,N):
