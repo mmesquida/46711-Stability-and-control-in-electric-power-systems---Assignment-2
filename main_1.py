@@ -148,13 +148,12 @@ if __name__ == "__main__":
 
             A_q2 = data_q2['A']
 
-            # get right eigenvalues, damped frequency and damping ratio
+           # get right eigenvalues, damped frequency and damping ratio
             lambda_A_q2, f_d_q2, zeta_q2 = get_eigenvalues(A_q2)
 
             # get participation matrix, right and left eigenvector matrix
-            P_q2, Phi_q2, Psi_q2 = get_P_matrix(A_q2)
-
-            # print participation matrix
+            P_q2, Phi_q2, Psi_q2 = get_P_matrix(A_q2)           
+             # print participation matrix
             row_headers_q2 = ['ΔδG1', 'ΔωG1', 'Δψ/f,G1', 'Δψ/kd,G1', 'Δψ/kq1,G1', 'Δψ/kq2,G1','Δv/m,exc,G1','ΔδG2', 'ΔωG2', 'Δψ/f,G2', 'Δψ/kd,G2', 'Δψ/kq1,G2', 'Δψ/kq2,G2','Δv/m,exc,G2','ΔδG3', 'ΔωG3', 'Δψ/f,G3', 'Δψ/kd,G3', 'Δψ/kq1,G3', 'Δψ/kq2,G3','Δv/m,exc,G3','ΔδG4', 'ΔωG4', 'Δψ/f,G4', 'Δψ/kd,G4', 'Δψ/kq1,G4', 'Δψ/kq2,G4','Δv/m,exc,G4']
             print_P_matrix(P_q2, row_headers_q2)
 
