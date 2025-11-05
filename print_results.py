@@ -20,7 +20,7 @@ def print_eigenvalues(lambda_A, f_d, zeta):
     print(table)
  
     
-def print_P_matrix(P, row_headers):
+def print_P_matrix(P, row_headers,decimals=4):
 
     column_headers = []
     for i in range(P.shape[1]):

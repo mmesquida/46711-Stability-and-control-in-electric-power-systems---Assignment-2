@@ -25,7 +25,4 @@ def get_P_matrix(A):
     P = Phi * np.transpose(Psi)
     
     return P, Phi, Psi
-    
-    
-    
 
