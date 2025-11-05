@@ -42,7 +42,24 @@ if __name__ == "__main__":
             row_headers_q1a = ['Δδ', 'Δω', 'Δe_q\'', 'Δe_d\'', 'Δe_q\"', 'Δe_d\"']
             print_P_matrix(P_q1a, row_headers_q1a)
             
+            names_q1a = data_q1a['latex_names_q1a']
+            latex_P_matrix(P_q1a, names_q1a, True, 'PM_latex_q1a.tex', 5, 0.05)
             
+            tol_imag = 1e-8
+            top_k = 5
+            n_states = A_q1a.shape[0]
+            state_names = get_state_names(data_q1a, n_states)
+            lam, VL, VR = la_eig(A_q1a, left=True, right=True)
+            VL, VR = biorthonormalize(VL, VR)
+            P = normalize_P_matrix(VL, VR)
+            groups = pair_modes(lam, tol_imag)
+            names = get_state_names(data_q1a, A_q1a.shape[0])
+            descriptions = describe_modes(lam, groups, P, names, top_k=top_k)
+            tex = build_modes_table_latex(lam, groups, descriptions,
+                                        caption="Eigenvalues, oscillatory frequencies and damping (Q1.1.1).",
+                                        label="tab:q1a_modes") 
+
+            write_tex_file("modes_q1a_table.tex", tex)
             # - - - /// Assignment 1.2.1 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 1.2.1 /// - - - - - - - - - -')
             
@@ -64,6 +81,24 @@ if __name__ == "__main__":
                             'Δv_m_exc', 'Δv_r3_exc', 'Δv_f_exc']
             print_P_matrix(P_q1b, row_headers_q1b)
             
+            names_q1b = data_q1b['latex_names_q1b']
+            latex_P_matrix(P_q1b, names_q1b, True, 'PM_latex_q1b.tex', 5, 0.05)
+            
+            tol_imag = 1e-8
+            top_k = 5
+            n_states = A_q1a.shape[0]
+            state_names = get_state_names(data_q1b, n_states)
+            lam, VL, VR = la_eig(A_q1b, left=True, right=True)
+            VL, VR = biorthonormalize(VL, VR)
+            P = normalize_P_matrix(VL, VR)
+            groups = pair_modes(lam, tol_imag)
+            names = get_state_names(data_q1b, A_q1b.shape[0])
+            descriptions = describe_modes(lam, groups, P, names, top_k=top_k)
+            tex = build_modes_table_latex(lam, groups, descriptions,
+                                        caption="Eigenvalues, oscillatory frequencies and damping, and dominant states (Q1.2.1).",
+                                        label="tab:q1b_modes") 
+
+            write_tex_file("modes_q1b_table.tex", tex)
             
             # - - - /// Assignment 1.3.1 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 1.3.1 /// - - - - - - - - - -')
@@ -87,6 +122,24 @@ if __name__ == "__main__":
                             'Δv_1_pss', 'Δv_2_pss', 'Δv_3_pss', 'Δv_ss_pss',]
             print_P_matrix(P_q1c, row_headers_q1c)
             
+            names_q1c = data_q1c['latex_names_q1c']
+            latex_P_matrix(P_q1c, names_q1c, True, 'PM_latex_q1c.tex', 5, 0.05)
+            
+            tol_imag = 1e-8
+            top_k = 5
+            n_states = A_q1c.shape[0]
+            state_names = get_state_names(data_q1c, n_states)
+            lam, VL, VR = la_eig(A_q1c, left=True, right=True)
+            VL, VR = biorthonormalize(VL, VR)
+            P = normalize_P_matrix(VL, VR)
+            groups = pair_modes(lam, tol_imag)
+            names = get_state_names(data_q1c, A_q1c.shape[0])
+            descriptions = describe_modes(lam, groups, P, names, top_k=top_k)
+            tex = build_modes_table_latex(lam, groups, descriptions,
+                                        caption="Eigenvalues, oscillatory frequencies and damping (Q1.3.1).",
+                                        label="tab:q1c_modes") 
+
+            write_tex_file("modes_q1c_table.tex", tex)
             
             # - - - /// Assignment 1.3.2 /// - - - - - - - - - - - - - - - - - - - - - 
             t = np.arange(0, 5, 0.001)
@@ -157,7 +210,8 @@ if __name__ == "__main__":
              # print participation matrix
             row_headers_q2 = ['ΔδG1', 'ΔωG1', 'Δψ/f,G1', 'Δψ/kd,G1', 'Δψ/kq1,G1', 'Δψ/kq2,G1','Δv/m,exc,G1','ΔδG2', 'ΔωG2', 'Δψ/f,G2', 'Δψ/kd,G2', 'Δψ/kq1,G2', 'Δψ/kq2,G2','Δv/m,exc,G2','ΔδG3', 'ΔωG3', 'Δψ/f,G3', 'Δψ/kd,G3', 'Δψ/kq1,G3', 'Δψ/kq2,G3','Δv/m,exc,G3','ΔδG4', 'ΔωG4', 'Δψ/f,G4', 'Δψ/kd,G4', 'Δψ/kq1,G4', 'Δψ/kq2,G4','Δv/m,exc,G4']
             print_P_matrix(P_q2, row_headers_q2)
-            latex_P_matrix(P_q2, np.array(row_headers_q2).reshape(-1,1), False, 'P_matrix_q2.tex', 4, 0.1)
+            names_q2 = data_q2['latex_names_q2a']
+            latex_P_matrix(P_q2, names_q2, True, 'PM_latex_q2.tex', 5, 0.05)
 
             # - - - /// Assignment 2.1.2 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 2.1.2 /// - - - - - - - - - -')
