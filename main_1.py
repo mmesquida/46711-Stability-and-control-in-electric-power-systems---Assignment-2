@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from load_data import load_data
 from compute_results import get_eigenvalues
-from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, top_generators, describe_modes,normalize_P_matrix, biorthonormalize, all_gen_ids
+from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, top_generators, describe_modes,normalize_P_matrix, biorthonormalize, all_gen_ids, build_delta_omega_indices, _gens_from_idx
 from print_results import print_eigenvalues
 from print_results import print_P_matrix, build_modes_table_latex, write_tex_file  
 import numpy as np
@@ -16,7 +16,7 @@ from Assignment_helpfunctions_part_I.P_matrix_write import latex_P_matrix
 
 if __name__ == "__main__":
 
-    output = 1
+    output = 2
     
     match output:
 
@@ -180,138 +180,54 @@ if __name__ == "__main__":
                 
              # - - - /// Assignment 2.1.4 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 2.1.4 /// - - - - - - - - - -')
-            
-            print("Total state names:", len(state_names))
-            for i, nm in enumerate(state_names[:40]):  
-                print(f"{i:02d}: {nm}")
 
-            # Normalize names
-            norm_names = []
-            for nm in state_names:
-                s = str(nm)
-                s = s.replace("\\", "")
-                s = s.replace("{", "").replace("}", "").replace(",", "")
-                s = s.replace(" ", "")
-                s = s.replace("Δ", "Delta")
-                s = s.replace("δ", "delta")
-                s = s.replace("ω", "omega")
-                s = s.lower()
-                norm_names.append(s)
+            mode_no = 21
+            k=21
+            k_sel = mode_no - 1
+            # make sure you have: state_names (list of len = A_q2.shape[0])
+            delta_idx, omega_idx = build_delta_omega_indices(state_names, states_per_gen=7)
+            # sort and get labels for plots
+            delta_idx_sorted, L_delta = _gens_from_idx(delta_idx, state_names)
+            omega_idx_sorted, L_omega = _gens_from_idx(omega_idx, state_names)
+            v = VR[:, k]  # k = selected mode index (0-based)
+            v_delta = v[delta_idx_sorted]
+            P_delta = np.column_stack([np.real(v_delta), np.imag(v_delta)])
 
-            delta_idx = []
-            omega_idx = []
-            for i, s in enumerate(norm_names):
-                if re.search(r'delta.*g\d+', s):
-                    delta_idx.append(i)
-                if re.search(r'omega.*g\d+', s):
-                    omega_idx.append(i)
+            # if it's a complex pair, pick the +imag member so plots are consistent
+            if np.abs(np.imag(lam[k_sel])) > 1e-9 and np.imag(lam[k_sel]) < 0:
+                cj = np.conj(lam[k_sel])
+                # find partner closest to the conjugate
+                partner = np.argmin(np.abs(lam - cj))
+                if np.imag(lam[partner]) > 0:
+                    k_sel = partner
 
+            # --- compute metrics for that specific mode
+            k = k_sel
+            sig = float(np.real(lam[k]))
+            omg = float(np.imag(lam[k]))
+            fd_k = abs(omg) / (2*np.pi)
+            zeta_k = -sig / np.sqrt(sig**2 + omg**2)
 
-
-            if len(delta_idx) == 0 or len(omega_idx) == 0:
-                print("No matches via name parsing -> using fallback pattern (blocks of 7 states per generator).")
-                n = len(state_names)
-                # try to detect number of generators for total states
-                # asume 7 steates por generador
-                G = n // 7
-                delta_idx = [0 + 7*g for g in range(G)]       # Δδ
-                omega_idx = [1 + 7*g for g in range(G)]       # Δω
-                print("Fallback delta_idx:", delta_idx)
-                print("Fallback omega_idx:", omega_idx)
-
-            # Choose modes to plot: pick first 3 oscillatory modes with lowest damping ratio
-            sigma = np.real(lam); omega = np.imag(lam)
-            zeta = -sigma/np.sqrt(sigma**2 + omega**2)
-            osc_idx = np.where(np.abs(omega) > 1e-6)[0]
-            osc_idx = osc_idx[np.argsort(zeta[osc_idx])]  # from lower ζ to gratest ζ
-
-            modes_to_plot = []
-            used = set()
-            for k in osc_idx:
-                if k in used: 
-                    continue
-                modes_to_plot.append(k)
-                cj = np.conj(lam[k])
-                partner = None
-                for t in range(len(lam)):
-                    if t==k or t in used: 
-                        continue
-                    if abs(lam[t]-cj) < 1e-7:
-                        partner = t; break
-                if partner is not None:
-                    used.add(partner)
-                used.add(k)
-            modes_to_plot = modes_to_plot[:3]
-            print("Modes to plot (1-based):", [m+1 for m in modes_to_plot])
-
-            # Aux function to get generator numbers and labels from state indices
-            def _gens_from_idx(idxs):
-                gens = []
-                labels = []
-                for i in idxs:
-                    raw = state_names[i]
-                    s = norm_names[i]
-                    m = re.search(r'g(\d+)', s)
-                    g = int(m.group(1)) if m else (len(labels)+1)
-                    gens.append(g)
-                    labels.append(f"G{g}")
-                order = np.argsort(gens)
-                return [idxs[o] for o in order], [labels[o] for o in order]
-
-            # Plot phasor diagrams for selected modes
-            for k in modes_to_plot:
-                sig = float(np.real(lam[k])); omg = float(np.imag(lam[k]))
-                fd_k = abs(omg)/(2*np.pi)
-                zeta_k = -sig/np.sqrt(sig**2 + omg**2)
-
-                if len(delta_idx)==0 and len(omega_idx)==0:
-                    print(f"[WARN] No Δδ/Δω indices found for mode k={k+1}. Skipping plots.")
-                    continue
-
-                # Δδ
-                if len(delta_idx) > 0:
-                    delta_idx_sorted, L_delta = _gens_from_idx(delta_idx)
-                    v = VR[:, k]
-                    v_delta = v[delta_idx_sorted]
-                    if v_delta.size > 0 and np.max(np.abs(v_delta))>0:
-                        P_delta = np.column_stack([np.real(v_delta), np.imag(v_delta)])
-                        P_delta = P_delta / np.max(np.abs(P_delta)) 
-                        ang = np.arctan2(P_delta[:,1], P_delta[:,0])
-                        if len(ang) >= 2:
-                            ref = np.angle(np.mean(np.exp(1j*ang)))
-                            grp = np.sign(np.cos(ang - ref))
-                            C_delta = ['tab:blue' if g>=0 else 'tab:red' for g in grp]
-                        else:
-                            C_delta = ['k']*len(L_delta)
-                        plt.figure()
-                        plot_phasors(P_delta, C_delta, L_delta)
-                        plt.gca().set_aspect('equal', 'box'); plt.grid(True, alpha=0.3)
-                        mode_type = "inter-area" if (len(set(np.sign(np.cos(ang - np.mean(ang)))))>1) else "local"
-                        plt.title(f"Mode k={k+1} — $\\Delta\\delta$ | f={fd_k:.3f} Hz, ζ={zeta_k:.3f} ({mode_type})")
+            # Δδ
+            if len(delta_idx) > 0:
+                delta_idx_sorted, L_delta = _gens_from_idx(delta_idx)
+                v = VR[:, k]
+                v_delta = v[delta_idx_sorted]
+                if v_delta.size > 0 and np.max(np.abs(v_delta)) > 0:
+                    P_delta = np.column_stack([np.real(v_delta), np.imag(v_delta)])
+                    P_delta = P_delta / np.max(np.abs(P_delta))
+                    ang = np.arctan2(P_delta[:,1], P_delta[:,0])
+                    if len(ang) >= 2:
+                        ref = np.angle(np.mean(np.exp(1j*ang)))
+                        grp = np.sign(np.cos(ang - ref))
+                        C_delta = ['tab:blue' if g >= 0 else 'tab:red' for g in grp]
                     else:
-                        print(f"[INFO] Δδ empty or nearly zero for mode k={k+1}")
-                else:
-                    print(f"[INFO] No Δδ indices. Skipping Δδ plot for mode k={k+1}")
-
-                # Δω
-                if len(omega_idx) > 0:
-                    omega_idx_sorted, L_omega = _gens_from_idx(omega_idx)
-                    v = VR[:, k]
-                    v_omega = v[omega_idx_sorted]
-                    if v_omega.size > 0 and np.max(np.abs(v_omega))>0:
-                        P_omega = np.column_stack([np.real(v_omega), np.imag(v_omega)])
-                        P_omega = P_omega / np.max(np.abs(P_omega))
-                        C_omega = ['k']*len(L_omega)
-                        plt.figure()
-                        plot_phasors(P_omega, C_omega, L_omega)
-                        plt.gca().set_aspect('equal', 'box'); plt.grid(True, alpha=0.3)
-                        plt.title(f"Mode k={k+1} — $\\Delta\\omega$ | f={fd_k:.3f} Hz, ζ={zeta_k:.3f}")
-                    else:
-                        print(f"[INFO] Δω empty or nearly zero for mode k={k+1}")
-                else:
-                    print(f"[INFO] No Δω indices. Skipping Δω plot for mode k={k+1}")
-
-            plt.show()
+                        C_delta = ['k'] * len(L_delta)
+                    plt.figure()
+                    plot_phasors(P_delta, C_delta, L_delta)
+                    plt.gca().set_aspect('equal', 'box'); plt.grid(True, alpha=0.3)
+                    mode_type = "inter-area" if (len(set(np.sign(np.cos(ang - np.mean(ang))))) > 1) else "local"
+                    plt.title(f"Mode k={k+1} — $\\Delta\\delta$ | f={fd_k:.3f} Hz, ζ={zeta_k:.3f} ({mode_type})")
 
         # - - - /// Assignment 2.1.5 /// - - - - - - - - - - - - - - - - - - - - - 
             "- - - - - /// Assignment 2.1.5 ///- - - - - -"

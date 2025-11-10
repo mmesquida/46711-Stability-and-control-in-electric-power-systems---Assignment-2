@@ -161,3 +161,54 @@ def describe_modes(lam, groups, P, state_names, top_k=5):
         descs.append(desc)
 
     return descs
+
+
+import re
+import numpy as np
+
+def _normalize_name(s: str) -> str:
+    # strip LaTeX/greek and unify
+    s = str(s)
+    s = s.replace("\\", "").replace("{","").replace("}","").replace(",","").replace(" ", "")
+    s = s.replace("Δ", "delta").replace("δ","delta").replace("ω","omega").lower()
+    s = s.replace("delta", "delta").replace("omega","omega")
+    return s
+
+def build_delta_omega_indices(state_names, states_per_gen=7):
+    """
+    Try to find Δδ and Δω by parsing names. If not found, fall back to
+    [0, 7, 14, ...] for Δδ and [1, 8, 15, ...] for Δω.
+    """
+    norm = [_normalize_name(nm) for nm in state_names]
+
+    # regex: look for 'delta'/'omega' and a generator tag like g1, g2, ...
+    has_g = [re.search(r"g(\d+)", s) for s in norm]
+    delta_idx = [i for i, s in enumerate(norm) if ("delta" in s and re.search(r"g\d+", s))]
+    omega_idx = [i for i, s in enumerate(norm) if ("omega" in s and re.search(r"g\d+", s))]
+
+    # fallback if nothing matched
+    if not delta_idx or not omega_idx:
+        G = len(state_names) // states_per_gen
+        delta_idx = [0 + states_per_gen*g for g in range(G)]
+        omega_idx = [1 + states_per_gen*g for g in range(G)]
+
+    return delta_idx, omega_idx
+
+def _gens_from_idx(idxs, state_names):
+    """
+    Given indices of states for each generator (e.g., δ or ω),
+    return indices sorted by generator number and the labels ['G1','G2',...].
+    """
+    gens = []
+    labels = []
+    for i in idxs:
+        s = _normalize_name(state_names[i])
+        m = re.search(r"g(\d+)", s)
+        if m:
+            g = int(m.group(1))
+        else:
+            g = len(labels) + 1  # fallback numbering
+        gens.append(g)
+        labels.append(f"G{g}")
+    order = np.argsort(gens)
+    return [idxs[o] for o in order], [labels[o] for o in order]

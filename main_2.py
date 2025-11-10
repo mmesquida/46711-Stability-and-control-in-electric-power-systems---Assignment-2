@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from load_data import load_data
 from compute_results import get_eigenvalues
-from compute_results import get_P_matrix
+from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, top_generators, describe_modes,normalize_P_matrix, biorthonormalize, all_gen_ids
 from print_results import print_eigenvalues
 from print_results import print_P_matrix
 import cmath
@@ -50,5 +50,9 @@ if __name__ == "__main__":
             latex_names = row_headers_q2
             Pwm.latex_P_matrix(P_q2, latex_names, False, 'PM_latex_code.tex', 5, 0.05)
             # - - - /// Assignment 2.1.2 /// - - - - - - - - - - - - - - - - - - - - - 
+            
             print('- - - /// Assignment 2.1.2 /// - - - - - - - - - -')
+
+
+
             
