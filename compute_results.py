@@ -55,13 +55,6 @@ def biorthonormalize(VL, VR):
             VL[:, k] /= den.conj()
     return VL, VR
 
-"""Column-normalized participation matrix P = |VR ∘ VL*|, sum_j P_ij over i = 1."""
-def normalize_P_matrix(VL, VR):
-    P = np.abs(VR * VL.conj()).T
-    colsum = P.sum(axis=0, keepdims=True)
-    np.maximum(colsum, 1e-16, out=colsum)
-    return P / colsum
-
 """Group real modes [i] and complex-conjugate pairs [i,j]."""
 def pair_modes(lam, tol_imag=1e-8):
     lam = np.asarray(lam)
