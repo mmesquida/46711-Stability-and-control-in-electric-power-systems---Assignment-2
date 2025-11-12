@@ -36,7 +36,8 @@ if __name__ == "__main__":
              # print participation matrix
             row_headers_q2 = ['ΔδG1', 'ΔωG1', 'Δψ/f,G1', 'Δψ/kd,G1', 'Δψ/kq1,G1', 'Δψ/kq2,G1','Δv/m,exc,G1','ΔδG2', 'ΔωG2', 'Δψ/f,G2', 'Δψ/kd,G2', 'Δψ/kq1,G2', 'Δψ/kq2,G2','Δv/m,exc,G2','ΔδG3', 'ΔωG3', 'Δψ/f,G3', 'Δψ/kd,G3', 'Δψ/kq1,G3', 'Δψ/kq2,G3','Δv/m,exc,G3','ΔδG4', 'ΔωG4', 'Δψ/f,G4', 'Δψ/kd,G4', 'Δψ/kq1,G4', 'Δψ/kq2,G4','Δv/m,exc,G4']
             print_P_matrix(P_q2, row_headers_q2)
-            latex_P_matrix(P_q2, np.array(row_headers_q2).reshape(-1,1), False, 'P_matrix_q2.tex', 4, 0.1)
+            names_q2a = 'latex_names_q2a'
+            latex_P_matrix(P_q2, np.array(names_q2a).reshape(-1,1), True, 'P_matrix_q2.tex', 4, 0.1)
 
             # - - - /// Assignment 2.1.2 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 2.1.2 /// - - - - - - - - - -')
