@@ -2,10 +2,16 @@
 
 import scipy.io as sio
 import numpy as np
+import os
 
 
 """ Load System Data """
-sys_data = sio.loadmat('system_q2.mat',squeeze_me=True) #squeeze_me=True gets rid of unnecessary nesting
+current_path = os.getcwd()
+parent_path = os.path.dirname(current_path)
+additional_path = f'/Assignment_data/system_q2.mat'
+file_path = parent_path + additional_path
+
+sys_data = sio.loadmat(file_path ,squeeze_me=True) #squeeze_me=True gets rid of unnecessary nesting
 A = sys_data['A']
 B = sys_data['B']
 C = sys_data['C']
