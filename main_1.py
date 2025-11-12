@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from load_data import load_data
 from compute_results import get_eigenvalues
-from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, top_generators, describe_modes,normalize_P_matrix, biorthonormalize, all_gen_ids, build_delta_omega_indices, _gens_from_idx
+from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, top_generators, describe_modes, biorthonormalize, all_gen_ids, build_delta_omega_indices, _gens_from_idx
 from print_results import print_eigenvalues
 from print_results import print_P_matrix, build_modes_table_latex, write_tex_file  
 import numpy as np
@@ -16,11 +16,6 @@ from Assignment_helpfunctions_part_I.P_matrix_write import latex_P_matrix
 
 if __name__ == "__main__":
 
-    output = 2
-    
-    match output:
-
-        case 1:
     
             # - - - /// Assignment 1.1.1 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 1.1.1 /// - - - - - - - - - -')
@@ -51,15 +46,16 @@ if __name__ == "__main__":
             state_names = get_state_names(data_q1a, n_states)
             lam, VL, VR = la_eig(A_q1a, left=True, right=True)
             VL, VR = biorthonormalize(VL, VR)
-            P = normalize_P_matrix(VL, VR)
             groups = pair_modes(lam, tol_imag)
             names = get_state_names(data_q1a, A_q1a.shape[0])
-            descriptions = describe_modes(lam, groups, P, names, top_k=top_k)
+            descriptions = describe_modes(lam, groups, P_q1a, names, top_k=top_k)
             tex = build_modes_table_latex(lam, groups, descriptions,
                                         caption="Eigenvalues, oscillatory frequencies and damping (Q1.1.1).",
                                         label="tab:q1a_modes") 
 
             write_tex_file("modes_q1a_table.tex", tex)
+            
+    
             # - - - /// Assignment 1.2.1 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 1.2.1 /// - - - - - - - - - -')
             
@@ -86,20 +82,20 @@ if __name__ == "__main__":
             
             tol_imag = 1e-8
             top_k = 5
-            n_states = A_q1a.shape[0]
+            n_states = A_q1b.shape[0]
             state_names = get_state_names(data_q1b, n_states)
             lam, VL, VR = la_eig(A_q1b, left=True, right=True)
             VL, VR = biorthonormalize(VL, VR)
-            P = normalize_P_matrix(VL, VR)
             groups = pair_modes(lam, tol_imag)
             names = get_state_names(data_q1b, A_q1b.shape[0])
-            descriptions = describe_modes(lam, groups, P, names, top_k=top_k)
+            descriptions = describe_modes(lam, groups, P_q1b, names, top_k=top_k)
             tex = build_modes_table_latex(lam, groups, descriptions,
                                         caption="Eigenvalues, oscillatory frequencies and damping, and dominant states (Q1.2.1).",
                                         label="tab:q1b_modes") 
 
             write_tex_file("modes_q1b_table.tex", tex)
             
+        
             # - - - /// Assignment 1.3.1 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 1.3.1 /// - - - - - - - - - -')
             
@@ -134,13 +130,14 @@ if __name__ == "__main__":
             VL, VR = biorthonormalize(VL, VR)
             groups = pair_modes(lam, tol_imag)
             names = get_state_names(data_q1c, A_q1c.shape[0])
-            descriptions = describe_modes(lam, groups, P, names, top_k=top_k)
+            descriptions = describe_modes(lam, groups, P_q1c, names, top_k=top_k)
             tex = build_modes_table_latex(lam, groups, descriptions,
                                         caption="Eigenvalues, oscillatory frequencies and damping (Q1.3.1).",
                                         label="tab:q1c_modes") 
 
             write_tex_file("modes_q1c_table.tex", tex)
             
+        
             # - - - /// Assignment 1.3.2 /// - - - - - - - - - - - - - - - - - - - - - 
             t = np.arange(0, 5, 0.001)
             delta_nul_deg = 5 
