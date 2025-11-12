@@ -121,6 +121,7 @@ if __name__ == "__main__":
             names_q1c = data_q1c['latex_names_q1c']
             latex_P_matrix(P_q1c, names_q1c, True, 'PM_latex_q1c.tex', 5, 0.05)
             
+            # - - - -  In order to create the latex matrix - - - - - - -
             tol_imag = 1e-8
             top_k = 5
             n_states = A_q1c.shape[0]
@@ -139,7 +140,6 @@ if __name__ == "__main__":
         
             # - - - /// Assignment 1.3.2 /// - - - - - - - - - - - - - - - - - - - - - 
             t = np.arange(0, 5, 0.001)
-            
             delta_nul_deg = 5 
             x_nul_q1a = [np.deg2rad(delta_nul_deg), 0, 0, 0, 0, 0]
             x_nul_q1b = [np.deg2rad(delta_nul_deg), 0, 0, 0, 0, 0, 0, 0, 0]
@@ -185,6 +185,4 @@ if __name__ == "__main__":
             plt.margins(x=0, y=0) # results in that (0,0) is in lower left corner
             plt.tick_params(labelsize=8) # reduce the fontsize of the tickmarks
             plt.grid(linestyle='-.', linewidth=0.6) # grid line modifications.
-            
             plt.show()
-        

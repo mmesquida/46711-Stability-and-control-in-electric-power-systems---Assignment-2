@@ -156,9 +156,6 @@ def describe_modes(lam, groups, P, state_names, top_k=5):
     return descs
 
 
-import re
-import numpy as np
-
 def _normalize_name(s: str) -> str:
     # strip LaTeX/greek and unify
     s = str(s)
