@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from load_data import load_data
 from compute_results import get_eigenvalues
-from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, top_generators, describe_modes,normalize_P_matrix, biorthonormalize, all_gen_ids, cat_of
+from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, top_generators, describe_modes, biorthonormalize, all_gen_ids, cat_of
 from print_results import print_eigenvalues
 from print_results import print_P_matrix
 import cmath
