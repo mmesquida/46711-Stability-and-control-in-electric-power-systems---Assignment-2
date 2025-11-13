@@ -7,6 +7,7 @@ import os
 from compute_results import get_eigenvalues, get_P_matrix, biorthonormalize
 from print_results import print_eigenvalues, print_P_matrix
 from scipy.linalg import eig as la_eig
+from sklearn import preprocessing
 
 """ Load System Data """
 current_path = os.getcwd()
@@ -38,6 +39,11 @@ lam, VL, VR = la_eig(A, left=True, right=True)
 VL, VR = biorthonormalize(VL, VR) 
 
 """ Find the location of relevant indices in the original system """
+# from participation matrix
+# λ17, λ18 for the G1 and G2
+# λ19, λ20  for G3 and G4
+# λ21, λ22, λ23, λ24 for G1, G2, G3, G4
+
 
 """ reduce analysis to electromechanical modes """
 """############################################################################
@@ -65,9 +71,36 @@ and the rows reflect the different locations
 Normalization can be applied similar to the participation matrix.
 ############################################################################"""
 
-avr_cont = [0,1,2,3]    
-Cw = np.abs(C[idx_states_interest, :] @ VR[:, modes_Interest])
-B_Vr = np.abs(VL[:, modes_Interest].T @ B[:, avr_cont]) 
+#------------ observability ---------#
+idx_rotor = [1,8,15,22] 
+C_rotor = C[idx_rotor, :]
+VR_em = VR[:, modes_Interest]
+Cw = np.abs(C_rotor @ VR_em)
+
+#----------- controllability --------#
+avr_cont = [0,1,2,3]  # external inputs (controls) the states. AVR inputs columns 1-4 in B matrix
+B_avr = B[:, avr_cont]
+VL_em = VL[:, modes_Interest]
+B_Vr = np.abs(VL_em.T @ B_avr)
+
+ 
 residues = np.abs(Cw @ B_Vr)
     
 print(residues)
+
+
+# normalizing the residues
+#residues_norm = preprocessing.normalize([residues])
+
+residues_norm = (residues - residues.min(axis=0))/(residues.max(axis=0) - residues.min(axis=0))
+print("Normalizaed value of residues: ", residues_norm)
+
+
+gen_names = ['G1', 'G2', 'G3', 'G4']
+
+# Find the generator with the maximum residue per mode
+dominant_gens = []
+for j, mode in enumerate(modes_Interest):
+    max_idx = np.argmax(residues_norm[:, j])
+    dominant_gens.append(gen_names[max_idx])
+    print(f"Mode {mode}: dominant generator = {gen_names[max_idx]} (value = {residues_norm[max_idx, j]:.3f})")
