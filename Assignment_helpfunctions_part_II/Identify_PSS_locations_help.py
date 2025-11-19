@@ -52,6 +52,8 @@ modes_Interest = [16,17,18,19,20,21, 22, 23]
 idx_states_interest = [0, 1, 7, 8, 14, 15, 21, 22]
 P_reduced = np.abs(P[np.ix_(idx_states_interest, modes_Interest)])
 
+gen_names = ['G1', 'G2', 'G3', 'G4'] 
+
 """ Calculate transfer function residues  """
 """############################################################################
 
@@ -81,21 +83,38 @@ B_Vr = np.abs(Psi_em @ B_avr)
  
 residues = Cw * B_Vr.T
     
-print("Residues values for the modes:", residues)
+print("\n" + "="*60)
+print("RESIDUE Matrix ")
+print("="*60)
+print(residues)
 
 
 # normalizing the residues
 #residues_norm = preprocessing.normalize([residues])
 
 residues_norm = (residues - residues.min(axis=0))/(residues.max(axis=0) - residues.min(axis=0))
-print("Normalizaed value of residues: ", residues_norm)
-
-
-gen_names = ['G1', 'G2', 'G3', 'G4']
+print("\n=== Normalized Value of Residues ===")
+for j, mode in enumerate(modes_Interest):
+    for i, g in enumerate(gen_names):
+        print(f"Residues_norm{mode + 1},{g} = {residues_norm[i, j]:.4e}")
+    print("-" * 40)
 
 # Find the generator with the maximum residue per mode
+print("\n=== DOMINANT GENERATORS PER MODE ===")
 dominant_gens = []
-for j, mode in enumerate(modes_Interest[:residues_norm.shape[1]]):
+for j, mode in enumerate(modes_Interest):
     max_idx = np.argmax(residues_norm[:, j])
     dominant_gens.append(gen_names[max_idx])
-    print(f"Mode {mode}: dominant generator = {gen_names[max_idx]} (value = {residues_norm[max_idx, j]:.3f})")
+    print(f"Mode {mode + 1}: dominant generator = {gen_names[max_idx]} (value = {residues_norm[max_idx, j]:.3f})")
+
+# Overall PSS placement recommendation
+print("\n=== PSS PLACEMENT RECOMMENDATION ===")
+total_residues = np.sum(residues_norm, axis=1)
+ranking = np.argsort(total_residues)[::-1]
+
+print("Generator ranking for PSS placement:")
+for rank, gen_idx in enumerate(ranking):
+    print(f"{rank+1}. {gen_names[gen_idx]} (Total normalized residue = {total_residues[gen_idx]:.3f})")
+
+    print(f"\nRecommended PSS locations: {', '.join([gen_names[i] for i in ranking[:3]])}")
+
