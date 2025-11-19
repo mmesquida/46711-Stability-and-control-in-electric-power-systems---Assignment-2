@@ -3,13 +3,9 @@ import matplotlib.pyplot as plt
 
 from load_data import load_data
 from compute_results import get_eigenvalues
-from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, top_generators, describe_modes, biorthonormalize, all_gen_ids, cat_of
-from print_results import print_eigenvalues
+from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, describe_modes, biorthonormalize, all_gen_ids, cat_of
 from print_results import print_P_matrix
-import cmath
-from scipy.io import loadmat
 from scipy.linalg import eig as la_eig
-import re
 from Assignment_helpfunctions_part_I.plot_phasor_diagram_sss import plot_phasors
 from print_results import print_P_matrix, build_modes_table_latex, write_tex_file 
 from Assignment_helpfunctions_part_I.P_matrix_write import latex_P_matrix
@@ -40,7 +36,8 @@ if __name__ == "__main__":
              # print participation matrix
             row_headers_q2 = ['ΔδG1', 'ΔωG1', 'Δψ/f,G1', 'Δψ/kd,G1', 'Δψ/kq1,G1', 'Δψ/kq2,G1','Δv/m,exc,G1','ΔδG2', 'ΔωG2', 'Δψ/f,G2', 'Δψ/kd,G2', 'Δψ/kq1,G2', 'Δψ/kq2,G2','Δv/m,exc,G2','ΔδG3', 'ΔωG3', 'Δψ/f,G3', 'Δψ/kd,G3', 'Δψ/kq1,G3', 'Δψ/kq2,G3','Δv/m,exc,G3','ΔδG4', 'ΔωG4', 'Δψ/f,G4', 'Δψ/kd,G4', 'Δψ/kq1,G4', 'Δψ/kq2,G4','Δv/m,exc,G4']
             print_P_matrix(P_q2, row_headers_q2)
-            latex_P_matrix(P_q2, np.array(row_headers_q2).reshape(-1,1), False, 'P_matrix_q2.tex', 4, 0.1)
+            names_q2 = data_q2['latex_names_q2a']
+            latex_P_matrix(P_q2, names_q2, True, 'P_matrix_q2.tex', 4, 0.1)
 
             # - - - /// Assignment 2.1.2 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 2.1.2 /// - - - - - - - - - -')
@@ -62,7 +59,7 @@ if __name__ == "__main__":
             # - - - /// Assignment 2.1.4 /// - - - - - - - - - - - - - - - - - - - - - 
             print('- - - /// Assignment 2.1.4 /// - - - - - - - - - -')
             # -- plot phasor diagram for mode k=21 (the first oscillatory mode)
-            k_self = 21 - 1
+            k_self = 19 - 1
             # If its eigenvalue has negative imaginary part, switch to its conjugate partner so we always plot the member with positive imag
             if np.iscomplex(lam[k_self]) and np.imag(lam[k_self]) < 0:
                 cj = np.conj(lam[k_self])
@@ -92,8 +89,9 @@ if __name__ == "__main__":
             if m > 0:
                 P = P / m
 
-            # --- colores simples y título con métricas
-            C = ['tab:blue'] * len(labels)
+            palette = plt.get_cmap('tab10').colors
+            COLORS = {lab: palette[i % len(palette)] for i, lab in enumerate(labels)}
+            C = [COLORS[lab] for lab in labels] 
             sig = float(np.real(lam[k_self])); omg = float(np.imag(lam[k_self]))
             f_hz = abs(omg)/(2*np.pi); zeta = -sig/np.hypot(sig, omg) if (sig or omg) else np.nan #Compute frequency and damping for the title
 
@@ -147,10 +145,9 @@ if __name__ == "__main__":
             y = x_t[delta_idx, :]
             m = np.max(np.abs(y));  y = y/m if m>0 else y
             labels = [f"G{g+1}" for g in range(G)]
-
             plt.figure(figsize=(9,4))
-            for g in range(G):
-                plt.plot(t, y[g, :], label=labels[g])
+            for g, lab in enumerate(labels):
+                plt.plot(t, y[g, :], label=lab, color=COLORS[lab])
             plt.xlabel("Time [s]"); plt.ylabel("Normalized $\\Delta\\delta$ [–]")
             plt.title(f"Inter-area mode only: f={fd[k_p]:.3f} Hz, ζ={zeta[k_p]:.3f}")
             plt.grid(True, alpha=0.3); plt.legend(ncols=4, loc="upper right")
