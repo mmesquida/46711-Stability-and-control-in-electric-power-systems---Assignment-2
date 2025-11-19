@@ -48,7 +48,7 @@ To provide a ranging the resulting participation matrix can further be normalize
 magitude of the generator with the highest participation is "1".   
 
 ############################################################################"""
-modes_Interest = [16,17,18,19,20,21,22,23]
+modes_Interest = [16,17,18,19,20,21, 22, 23]
 idx_states_interest = [0, 1, 7, 8, 14, 15, 21, 22]
 P_reduced = np.abs(P[np.ix_(idx_states_interest, modes_Interest)])
 
@@ -75,11 +75,11 @@ Cw = np.abs(C_rotor @ Phi_em)
 #----------- controllability --------#
 avr_cont = [0,1,2,3]  # external inputs (controls) the states. AVR inputs columns 1-4 in B matrix
 B_avr = B[:, avr_cont]
-Psi_em = Psi[:, modes_Interest]
-B_Vr = np.abs(Psi_em.T @ B_avr)
+Psi_em = Psi[modes_Interest, :]
+B_Vr = np.abs(Psi_em @ B_avr)
 
  
-residues = np.abs(Cw @ B_Vr)
+residues = Cw * B_Vr.T
     
 print("Residues values for the modes:", residues)
 
