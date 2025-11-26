@@ -12,10 +12,15 @@ import os
 # Parameters for frequency sweep
 fmin = 0 ; fmax = 2
 f = np.arange(fmin,fmax,.001)
+wsys = 2 * np.pi * f
 
 # PSS design parameters
-gen = 4 #Specify Generator where the PSS should be tuned
-Ks=20;Tw=10;Tn1=.05;Td1=.02;Tn2=3;Td2=5.4; #initial PSS parameters provided in the assignment
+Ks=20;
+Tw=16;
+Tn1=0.0847;
+Td1=0.0000000001;
+Tn2=3.474;
+Td2=5.45;
 
 
 """ Load initial System Data """
@@ -46,7 +51,6 @@ the function pss_stsp in stsp_functions.py can be used to construct a
 PSS state space object based on the provided settings
 
 ############################################################################"""
-pss = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
 
 
 """ Find the location of relevant indices in the original system """
@@ -64,17 +68,56 @@ strsps contains the indices related to the in- and outputs of the system:
 All indices occur in generator order, i.e the first index is related to machine 1, etc.
 
 ############################################################################"""
-print(statename == 'psif')
-print(strsps)
+
+plt.figure()
+
+# manipulate the system by removing the dynamic states
+is_r = np.array([(name == 'angle') or (name == 'speed') for name in statename]) # state variables associated with rotor dynamics
+is_e = ~is_r # state variables associated with electrical and control dynamics
+
+a_ee = A[is_e, :][:, is_e] # extract submatrix
+
+# frequency response of the system for all generators
+for gen in range(0, 4): # for every generator
+    vref_idx = strsps['vref'].item()[gen] - 1
+    pe_idx   = strsps['pe'].item()[gen]   - 1
+    b_e = B[is_e, vref_idx] # extract submatrix
+    c_e  = C[pe_idx, is_e] # extract submatrix
+    d_e  = D[pe_idx, vref_idx] # extract submatrix
+
+    sys_red = stsp.StateSpace(a_ee, b_e, c_e, d_e) # reduced state space object
+    
+    mag_sys, phase_sys, omega_sys = sys_red.frequency_response(wsys, squeeze=None) # frequency response of the system
+    
+    phase_sys_deg = np.rad2deg(np.squeeze(phase_sys))
+    phase_sys_deg = (phase_sys_deg + 180) % 360 - 180   
+    
+    ideal_lead_deg = -phase_sys_deg                     
+    
+    plt.plot(f, ideal_lead_deg, label=f'G{gen+1}')
+
+# frequency response of the PSS
+pss = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
+
+mag_pss, phase_pss, omega_pss = pss.frequency_response(wsys, squeeze=None)
+phase_pss_deg = np.rad2deg(np.squeeze(phase_pss))
+phase_pss_deg = (phase_pss_deg + 180) % 360 - 180
+plt.plot(f, phase_pss_deg, label = 'PSS')
+
+plt.xlabel('Frequency [Hz]')
+plt.ylabel('Phase [°]')
+plt.grid(True)
+plt.xlim(0, 2) # adjustment of the x-limits
+plt.ylim(-10, 60) # adjustment of the y-limits
+plt.legend()
+plt.title('Ideal PSS Phase Lead for Generators G1-G4')
+plt.tight_layout()
+plt.show()
+    
+    
 
 
 
-""" Manipulate the system by removing the dynamic states """
-"""############################################################################
-
-Extract submatrices from the original systems A,B,C,D matrices and form a new (reduced) state space object sys_red
-
-############################################################################"""
 
 
 
