@@ -44,10 +44,14 @@ a pss as input. For example: "pss2_sys=addPSS(pss_sys,pss2,strsps,gen2)"
 
 ############################################################################"""
 # right eigenvalues, damped frequency and damping ratio
+# -----------------------------------------------------------------------------
 # original system
 lambda_A_sys, f_d_sys, zeta_sys = get_eigenvalues(sys.A)
+print('\nORIGINAL SYSTEM')
 print_eigenvalues(lambda_A_sys, f_d_sys, zeta_sys)
 
+# -----------------------------------------------------------------------------
+# original system + PSS (provided initial PSS settings)
 # added PSS with provided values
 Ks=20;
 Tw=10;
@@ -55,84 +59,61 @@ Tn1=0.05;
 Td1=0.02;
 Tn2=3.0;
 Td2=5.4;
-pss_0 = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
+pss = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
 
-gen = 3
-pss_sys_0 = f_stsp.addPSS(sys, pss_0, strsps,gen)
+gen = 1
+pss_sys = f_stsp.addPSS(sys, pss, strsps, gen)
 
-lambda_A_pss_sys_0, f_d_pss_sys_0, zeta_pss_sys_0 = get_eigenvalues(pss_sys_0.A)
-print_eigenvalues(lambda_A_pss_sys_0, f_d_pss_sys_0, zeta_pss_sys_0)
+lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys = get_eigenvalues(pss_sys.A)
+print(f'\nORIGINAL SYSTEM + PSS at G{gen} (provided initial PSS settings)')
+print_eigenvalues(lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys)
 
+# -----------------------------------------------------------------------------
+# original system + PSS (developed PSS settings)
 # added PSS with developed values
+
 Ks=20;
 Tw=16;
 Tn1=0.0847;
 Td1=0.0000000001;
 Tn2=3.474;
 Td2=5.45;
-pss_1 = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
 
-gen = 3
-pss_sys_1 = f_stsp.addPSS(sys, pss_1, strsps,gen)
+pss = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
+
+gen = 1
+pss_sys = f_stsp.addPSS(sys, pss, strsps, gen)
+
+lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys = get_eigenvalues(pss_sys.A)
+print(f'\nORIGINAL SYSTEM + PSS at G{gen} (developed PSS settings)')
+print_eigenvalues(lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys)
+
+# -----------------------------------------------------------------------------
+# original system + 2 PSS (developed PSS settings)
+pss_1 = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
+gen_1 = 1
+pss_sys = f_stsp.addPSS(sys, pss_1, strsps, gen_1)
 
 lambda_A_pss_sys_1, f_d_pss_sys_1, zeta_pss_sys_1 = get_eigenvalues(pss_sys_1.A)
-
-#Plot time serie for inter-area mode
-
-n_states = pss_sys_1.A.shape[0]
-state_names = get_state_names(pss_sys_1.A, n_states)
-lam, VL, VR = la_eig(pss_sys_1.A, left=True, right=True)
-VL, VR = biorthonormalize(VL, VR)
-
-for k in range(VR.shape[1]):
-    den = VL[:, k].conj().T @ VR[:, k]
-    if den != 0:
-        VL[:, k] /= den.conj()
+# print_eigenvalues(lambda_A_pss_sys_1, f_d_pss_sys_1, zeta_pss_sys_1)
 
 
-G = len(state_names)//7
-delta_idx = [0 + 7*g for g in range(G)]
-           
-k_inter = 22
 
-# partner + choose +imag member
-def conj_partner(idx): return int(np.argmin(np.abs(lambda_A_pss_sys_1 - np.conj(lambda_A_pss_sys_1[idx]))))
-k_p = k_inter if np.real(k_inter) > 0 else conj_partner(k_inter)
-k_m = conj_partner(k_p)
 
-print(f"Inter-area: k+={k_p+1}, f={f_d_pss_sys_1[k_p]:.3f} Hz, ζ={zeta_pss_sys_1[k_p]:.3f}; partner k-={k_m+1}")
-    
-z0 = np.zeros_like(lambda_A_pss_sys_1, dtype=complex)
-z0[k_p] = 0.5; z0[k_m] = 0.5
 
-t = np.arange(0.0, 12.0+0.01, 0.01)
-exp_terms = np.exp(np.outer(lambda_A_pss_sys_1, t))          
-x_t = VR @ (exp_terms * z0[:, None])
-x_t = np.real(x_t)
+""" Compare the systems """
+"""############################################################################
 
-# --- select only Δδ states for generador
-# --- number of generators and indices for Δδ states ---
-G = len(state_names) // 7
-delta_idx = [0 + 7*g for g in range(G)]
+Determine the damping and frequency of the different systems
 
-# --- reconstruct state trajectory for Δδ states ---
-y = x_t[delta_idx, :]
-m = np.max(np.abs(y));  
-y = y/m if m > 0 else y
+For a start that could be:
+    Original System
+    System with PSS settings provided
+    Improved PSS tuning
 
-# --- labels and colors per generator ---
-labels = [f"G{g+1}" for g in range(G)]
-palette = plt.get_cmap('tab10').colors
-COLORS = {lab: palette[i % len(palette)] for i, lab in enumerate(labels)}
+############################################################################"""
 
-plt.figure(figsize=(9, 4))
-for g, lab in enumerate(labels):
-    plt.plot(t, y[g, :], label=lab, color=COLORS[lab])
 
-plt.xlabel("Time [s]")
-plt.ylabel("Normalized $\\Delta\\delta$ [–]")
-plt.title(f"Inter-area mode only: f={f_d_pss_sys_1[k_p]:.3f} Hz, ζ={zeta_pss_sys_1[k_p]:.3f}")
-plt.grid(True, alpha=0.3)
-plt.legend(ncols=4, loc="upper right")
-plt.tight_layout()
-plt.show()
+
+
+
