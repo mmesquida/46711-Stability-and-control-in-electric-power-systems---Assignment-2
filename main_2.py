@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
             # --- time response ---
             t = np.arange(0.0, 12.0+0.01, 0.01)
-            exp_terms = np.exp(np.outer(lam, t))          # (n_modes, N_t)
+            exp_terms = np.exp(np.outer(lam, t))          
             x_t = VR @ (exp_terms * z0[:, None])
             x_t = np.real(x_t)
 
