@@ -116,5 +116,5 @@ print("Generator ranking for PSS placement:")
 for rank, gen_idx in enumerate(ranking):
     print(f"{rank+1}. {gen_names[gen_idx]} (Total normalized residue = {total_residues[gen_idx]:.3f})")
 
-    print(f"\nRecommended PSS locations: {', '.join([gen_names[i] for i in ranking[:3]])}")
+print(f"\nRecommended PSS locations: {', '.join([gen_names[i] for i in ranking[:3]])}")
 

@@ -46,7 +46,7 @@ the function pss_stsp in stsp_functions.py can be used to construct a
 PSS state space object based on the provided settings
 
 ############################################################################"""
-
+pss = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
 
 
 """ Find the location of relevant indices in the original system """
@@ -64,6 +64,8 @@ strsps contains the indices related to the in- and outputs of the system:
 All indices occur in generator order, i.e the first index is related to machine 1, etc.
 
 ############################################################################"""
+print(statename == 'psif')
+print(strsps)
 
 
 
