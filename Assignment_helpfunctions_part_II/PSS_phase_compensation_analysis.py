@@ -1,4 +1,3 @@
-# code has been modified multiple times using AI to load in my laptop because of path errors so may have unnecessary codes and functions.
 import scipy.io as sio
 import numpy as np
 import control.statesp as stsp
@@ -12,8 +11,8 @@ f = np.arange(fmin, fmax, .001)
 omega = 2 * np.pi * f
 
 # PSS design parameters
-gen = 3  # Specify Generator where the PSS should be tuned
-Ks = 22; Tw = 10; Tn1 = .05; Td1 = .02; Tn2 = 2.2; Td2 = 1.2
+gen = 4  # Specify Generator where the PSS should be tuned
+Ks = 20; Tw = 16; Tn1 = 0.0847; Td1 = 0.0000000001; Tn2 = 3.474; Td2 = 5.45
 
 """ Load System Data """
 current_path = os.getcwd()

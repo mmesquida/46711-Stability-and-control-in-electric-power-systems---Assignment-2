@@ -79,8 +79,8 @@ a_ee = A[is_e, :][:, is_e] # extract submatrix
 
 # frequency response of the system for all generators
 for gen in range(0, 4): # for every generator
-    vref_idx = strsps['vref'].item()[gen] - 1
-    pe_idx   = strsps['pe'].item()[gen]   - 1
+    vref_idx = strsps['vref'].item()[gen] - 1 # Vref input indices for generator
+    pe_idx   = strsps['pe'].item()[gen]   - 1 # Pe output indices for generator
     b_e = B[is_e, vref_idx] # extract submatrix
     c_e  = C[pe_idx, is_e] # extract submatrix
     d_e  = D[pe_idx, vref_idx] # extract submatrix
@@ -89,10 +89,10 @@ for gen in range(0, 4): # for every generator
     
     mag_sys, phase_sys, omega_sys = sys_red.frequency_response(wsys, squeeze=None) # frequency response of the system
     
-    phase_sys_deg = np.rad2deg(np.squeeze(phase_sys))
-    phase_sys_deg = (phase_sys_deg + 180) % 360 - 180   
+    phase_sys_deg = np.rad2deg(np.squeeze(phase_sys)) # convert to degrees
+    phase_sys_deg = (phase_sys_deg + 180) % 360 - 180 # [-180, 180] range
     
-    ideal_lead_deg = -phase_sys_deg                     
+    ideal_lead_deg = -phase_sys_deg # ideal phase to be supplied = inverted system phase                     
     
     plt.plot(f, ideal_lead_deg, label=f'G{gen+1}')
 
