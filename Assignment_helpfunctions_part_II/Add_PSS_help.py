@@ -37,10 +37,14 @@ a pss as input. For example: "pss2_sys=addPSS(pss_sys,pss2,strsps,gen2)"
 
 ############################################################################"""
 # right eigenvalues, damped frequency and damping ratio
+# -----------------------------------------------------------------------------
 # original system
 lambda_A_sys, f_d_sys, zeta_sys = get_eigenvalues(sys.A)
+print('\nORIGINAL SYSTEM')
 print_eigenvalues(lambda_A_sys, f_d_sys, zeta_sys)
 
+# -----------------------------------------------------------------------------
+# original system + PSS (provided initial PSS settings)
 # added PSS with provided values
 Ks=20;
 Tw=10;
@@ -48,44 +52,52 @@ Tn1=0.05;
 Td1=0.02;
 Tn2=3.0;
 Td2=5.4;
-pss_0 = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
+pss = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
 
-gen = 3
-pss_sys_0 = f_stsp.addPSS(sys, pss_0, strsps,gen)
+gen = 1
+pss_sys = f_stsp.addPSS(sys, pss, strsps, gen)
 
-lambda_A_pss_sys_0, f_d_pss_sys_0, zeta_pss_sys_0 = get_eigenvalues(pss_sys_0.A)
-print_eigenvalues(lambda_A_pss_sys_0, f_d_pss_sys_0, zeta_pss_sys_0)
+lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys = get_eigenvalues(pss_sys.A)
+print(f'\nORIGINAL SYSTEM + PSS at G{gen} (provided initial PSS settings)')
+print_eigenvalues(lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys)
 
+# -----------------------------------------------------------------------------
+# original system + PSS (developed PSS settings)
 # added PSS with developed values
+
 Ks=20;
 Tw=16;
 Tn1=0.0847;
 Td1=0.0000000001;
 Tn2=3.474;
 Td2=5.45;
+
+pss = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
+
+gen = 1
+pss_sys = f_stsp.addPSS(sys, pss, strsps, gen)
+
+lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys = get_eigenvalues(pss_sys.A)
+print(f'\nORIGINAL SYSTEM + PSS at G{gen} (developed PSS settings)')
+print_eigenvalues(lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys)
+
+# -----------------------------------------------------------------------------
+# original system + 2 PSS (developed PSS settings)
 pss_1 = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
+gen_1 = 1
+pss_sys = f_stsp.addPSS(sys, pss_1, strsps, gen_1)
 
-gen = 3
-pss_sys_1 = f_stsp.addPSS(sys, pss_1, strsps,gen)
+pss_2 = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
+gen_2 = 2
+pss2_sys = f_stsp.addPSS(pss_sys, pss_2, strsps, gen_2)
 
-lambda_A_pss_sys_1, f_d_pss_sys_1, zeta_pss_sys_1 = get_eigenvalues(pss_sys_1.A)
-# print_eigenvalues(lambda_A_pss_sys_1, f_d_pss_sys_1, zeta_pss_sys_1)
+lambda_A_pss2_sys, f_d_pss2_sys, zeta_pss2_sys = get_eigenvalues(pss2_sys.A)
+print(f'\nORIGINAL SYSTEM + 2 PSS at G{gen_1} and G{gen_2} (developed PSS settings)')
+print_eigenvalues(lambda_A_pss2_sys, f_d_pss2_sys, zeta_pss2_sys)
 
 
 
 
-
-""" Compare the systems """
-"""############################################################################
-
-Determine the damping and frequency of the different systems
-
-For a start that could be:
-    Original System
-    System with PSS settings provided
-    Improved PSS tuning
-
-############################################################################"""
 
 
 
