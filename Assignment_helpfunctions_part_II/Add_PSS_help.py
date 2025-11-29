@@ -3,8 +3,8 @@ import numpy as np
 import control.statesp as stsp
 import stsp_functions as f_stsp
 import os
-from compute_results import get_eigenvalues, get_state_names, biorthonormalize
-from print_results import print_eigenvalues
+from compute_results import get_eigenvalues, get_state_names, biorthonormalize, pair_modes, describe_modes
+from print_results import print_eigenvalues, build_modes_table_latex, write_tex_file
 import matplotlib.pyplot as plt
 from scipy.linalg import eig as la_eig
 from pathlib import Path
@@ -64,6 +64,22 @@ lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys = get_eigenvalues(pss_sys.A)
 print(f'\nORIGINAL SYSTEM + PSS at G{gen} (provided initial PSS settings)')
 print_eigenvalues(lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys)
 
+# print the table in the latex format for report 
+
+tol_imag = 1e-8
+groups = pair_modes(lambda_A_pss_sys, tol_imag)
+descriptions = [""] * len(groups)       
+
+latex_code = build_modes_table_latex(
+    lambda_A_pss_sys,
+    groups,
+    descriptions,
+    caption=f"Eigenvalues, oscillatory frequencies and damping (System + PSS at G{gen} (provided initial PSS settings))",
+    label=f"tab:pss_g{gen}_initial_setting"
+)
+
+write_tex_file("modes_initial_settings_pss_table.tex", latex_code)
+
 # -----------------------------------------------------------------------------
 # original system + PSS (developed PSS settings)
 # added PSS with developed values
@@ -84,6 +100,21 @@ lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys = get_eigenvalues(pss_sys.A)
 print(f'\nORIGINAL SYSTEM + PSS at G{gen} (developed PSS settings)')
 print_eigenvalues(lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys)
 
+# print the table in the latex format for report
+
+tol_imag = 1e-8
+groups = pair_modes(lambda_A_pss_sys, tol_imag)
+descriptions = [""] * len(groups)       
+
+latex_code = build_modes_table_latex(
+    lambda_A_pss_sys,
+    groups,
+    descriptions,
+    caption=f"Eigenvalues, oscillatory frequencies and damping (System + PSS at G{gen} (developed PSS settings))",
+    label=f"tab:pss_g{gen}_developed_settings"
+)
+write_tex_file("modes_developed_settings_PSS_table.tex", latex_code)
+
 # -----------------------------------------------------------------------------
 # original system + 2 PSS (developed PSS settings)
 pss_1 = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
@@ -97,6 +128,21 @@ pss2_sys = f_stsp.addPSS(pss_sys, pss_2, strsps, gen_2)
 lambda_A_pss2_sys, f_d_pss2_sys, zeta_pss2_sys = get_eigenvalues(pss2_sys.A)
 print(f'\nORIGINAL SYSTEM + 2 PSS at G{gen_1} and G{gen_2} (developed PSS settings)')
 print_eigenvalues(lambda_A_pss2_sys, f_d_pss2_sys, zeta_pss2_sys)
+
+# print the table in the latex format for report
+
+tol_imag = 1e-8
+groups = pair_modes(lambda_A_pss2_sys, tol_imag)
+descriptions = [""] * len(groups)       
+
+latex_code = build_modes_table_latex(
+    lambda_A_pss2_sys,
+    groups,
+    descriptions,
+    caption=f"Eigenvalues, oscillatory frequencies and damping (System + 2 PSS at G{gen_1} and G{gen_2} (developed PSS settings))",
+    label=f"tab:pss_G{gen_1}_and_G{gen_2}_developed_settings"
+)
+write_tex_file("modes_developed_settings_PSS2_table.tex", latex_code)
 
 #Plot time serie for inter-area mode
 

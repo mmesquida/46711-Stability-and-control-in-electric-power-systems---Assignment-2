@@ -6,8 +6,6 @@ from compute_results import get_eigenvalues
 from compute_results import get_P_matrix, get_state_names, pair_modes, gen_of, top_generators, describe_modes, biorthonormalize, all_gen_ids, build_delta_omega_indices, _gens_from_idx
 from print_results import print_eigenvalues
 from print_results import print_P_matrix, build_modes_table_latex, write_tex_file  
-import numpy as np
-import cmath
 from scipy.io import loadmat
 from scipy.linalg import eig as la_eig
 import re
