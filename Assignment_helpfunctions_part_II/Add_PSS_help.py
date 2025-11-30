@@ -57,7 +57,7 @@ Tn2=3.0;
 Td2=5.4;
 pss = f_stsp.pss_stsp(Ks, Tw, Tn1, Td1, Tn2, Td2)
 
-gen = 1
+gen = 3
 pss_sys = f_stsp.addPSS(sys, pss, strsps, gen)
 
 lambda_A_pss_sys, f_d_pss_sys, zeta_pss_sys = get_eigenvalues(pss_sys.A)
